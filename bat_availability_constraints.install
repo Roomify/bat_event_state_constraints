@@ -1,0 +1,83 @@
+<?php
+
+/**
+ * @file
+ * Install for BAT Availability module - sets up the main BAT Availability
+ * table.
+ */
+
+/**
+ * Implements hook_field_schema().
+ */
+function bat_availability_constraints_field_schema($field) {
+  if ($field['type'] == 'bat_availability_constraints_range') {
+    return array(
+      'columns' => array(
+        'start_date' => array(
+          'type' => 'varchar',
+          'length' => 10,
+          'not null' => TRUE,
+        ),
+        'end_date' => array(
+          'type' => 'varchar',
+          'length' => 10,
+          'not null' => TRUE,
+        ),
+        'always' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'default' => 1,
+        ),
+        'constraint_type' => array(
+          'type' => 'varchar',
+          'length' => 20,
+          'not null' => TRUE,
+        ),
+        'start_day' => array(
+          'type' => 'int',
+          'not null' => FALSE,
+        ),
+        'minimum_stay' => array(
+          'type' => 'int',
+          'not null' => FALSE,
+        ),
+        'maximum_stay' => array(
+          'type' => 'int',
+          'not null' => FALSE,
+        ),
+      ),
+      'indexes' => array(
+        'range' => array(
+          'start_date',
+          'end_date',
+          'minimum_stay',
+          'maximum_stay'),
+        'range_day' => array(
+          'start_date',
+          'end_date',
+          'minimum_stay',
+          'maximum_stay',
+          'start_day'),
+      ),
+    );
+  }
+}
+
+/**
+ * Implements hook_install().
+ */
+function bat_availability_constraints_install() {
+  bat_availability_constraints_add_availability_range_field('bat_unit_type', 'bat_unit_type');
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function bat_availability_constraints_uninstall() {
+  foreach (bat_unit_get_types() as $type) {
+    variable_del('bat_availability_constraints_unit_' . $type->type);
+    variable_del('bat_availability_constraints_type_' . $type->type);
+  }
+
+  field_delete_field('bat_constraints_range');
+}
