@@ -74,82 +74,9 @@ function bat_availability_constraints_remove_js() {
 }
 
 /**
- * Implements hook_form_FORM_ID_alter().
- *
- * FORM_ID = bat_type_bundle_form
- */
-function bat_availability_constraints_form_bat_type_bundle_form_alter(&$form, &$form_state, $form_id) {
-
-  $type_bundle = $form_state['bat_type_bundle'];
-  // Unit availability information for administrators.
-  $form['availability_constraints'] = array(
-    '#type' => 'fieldset',
-    '#group' => 'additional_settings',
-    '#title' => t('Status'),
-    '#tree' => FALSE,
-    '#weight' => 80,
-    '#attributes' => array(
-      'class' => array('unit-type-form-constraints'),
-    ),
-    '#attached' => array(
-      'js' => array(drupal_get_path('module', 'bat_availability_constraints') . '/js/bat_availability_constraints_tab.js'),
-    ),
-  );
-
-  $form['availability_constraints']['bat_availability_range_unit'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Enable availability range constraints per type'),
-    '#default_value' => variable_get('bat_availability_constraints_unit_' . $type_bundle->type, 0),
-    '#description' => t('This will allow you to define a minimum or maximum booking period for each type of this bundle. If you disable this feature, all the stored data will be removed'),
-  );
-
-  $form['availability_constraints']['bat_availability_range_type'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Enable availability range constraints for all types of this bundle'),
-    '#default_value' => variable_get('bat_availability_constraints_type_' . $type_bundle->type, 0),
-    '#description' => t('This will allow you to define a minimum or maximum booking period for all types of this bundle. If you disable this feature, all the stored data will be removed'),
-  );
-
-  if (variable_get('bat_availability_constraints_type_' . $type_bundle->type, 0) == 0) {
-    $form['bat_constraints_range']['#access'] = FALSE;
-  }
-
-  $form['actions']['submit']['#submit'][] = 'bat_availability_constraints_bat_unit_type_form_submit';
-}
-
-/**
- * Submit handler for bat_unit_type_form.
- */
-function bat_availability_constraints_bat_unit_type_form_submit($form, &$form_state) {
-  $type_bundle = $form_state['bat_type_bundle'];
-
-  if (variable_get('bat_availability_constraints_unit_' . $type_bundle->type, 0) == 0
-    && $form_state['values']['bat_availability_range_unit'] == 1) {
-    bat_availability_constraints_add_availability_range_field('bat_type', $type_bundle->type);
-  }
-  elseif (variable_get('bat_availability_constraints_unit_' . $type_bundle->type, 0) == 1
-    && $form_state['values']['bat_availability_range_unit'] == 0) {
-    field_delete_instance(array(
-      'field_name' => 'bat_constraints_range',
-      'entity_type' => 'bat_type_bundle',
-      'bundle' => $type_bundle->type,
-    ));
-  }
-
-  if (variable_get('bat_availability_constraints_type_' . $type_bundle->type, 0) == 1
-    && $form_state['values']['bat_availability_range_type'] == 0) {
-    $type_bundle->bat_constraints_range[LANGUAGE_NONE] = array();
-    entity_save('bat_type_bundle', $type_bundle);
-  }
-
-  variable_set('bat_availability_constraints_unit_' . $type_bundle->type, $form_state['values']['bat_availability_range_unit']);
-  variable_set('bat_availability_constraints_type_' . $type_bundle->type, $form_state['values']['bat_availability_range_type']);
-}
-
-/**
  * Adds the default Availability range field to certain bundle.
  */
-function bat_availability_constraints_add_availability_range_field($entity_type, $bundle) {
+function bat_availability_constraints_add_availability_range_field($bundle) {
   field_info_cache_clear();
 
   // Create field ('bat_constraint_range') if not exists.
@@ -164,11 +91,11 @@ function bat_availability_constraints_add_availability_range_field($entity_type,
 
   field_cache_clear();
 
-  if (field_read_instance($entity_type, 'bat_constraints_range', $bundle) === FALSE) {
+  if (field_read_instance('bat_type', 'bat_constraints_range', $bundle) === FALSE) {
     // Create the instance on the bundle.
     $instance = array(
       'field_name' => 'bat_constraints_range',
-      'entity_type' => $entity_type,
+      'entity_type' => 'bat_type',
       'label' => 'Availability ranges',
       'bundle' => $bundle,
       'required' => FALSE,
@@ -181,12 +108,11 @@ function bat_availability_constraints_add_availability_range_field($entity_type,
 }
 
 /**
- * Implements hook_entity_delete().
+ * Implements hook_entity_insert().
  */
-function bat_availability_constraints_entity_delete($entity, $type) {
-  if ($type == 'bat_unit_type') {
-    variable_del('bat_availability_constraints_unit_' . $entity->type);
-    variable_del('bat_availability_constraints_type_' . $entity->type);
+function bat_availability_constraints_entity_insert($entity, $type) {
+  if ($type == 'bat_type_bundle') {
+    bat_availability_constraints_add_availability_range_field($entity->type);
   }
 }
 
