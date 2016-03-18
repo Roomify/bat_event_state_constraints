@@ -2,15 +2,14 @@
 
 /**
  * @file
- * Install for BAT Availability module - sets up the main BAT Availability
- * table.
+ * Install for BAT Event State module.
  */
 
 /**
  * Implements hook_field_schema().
  */
-function bat_availability_constraints_field_schema($field) {
-  if ($field['type'] == 'bat_availability_constraints_range') {
+function bat_event_state_constraints_field_schema($field) {
+  if ($field['type'] == 'bat_event_state_constraints_range') {
     return array(
       'columns' => array(
         'start_date' => array(
@@ -66,18 +65,15 @@ function bat_availability_constraints_field_schema($field) {
 /**
  * Implements hook_install().
  */
-function bat_availability_constraints_install() {
-  bat_availability_constraints_add_availability_range_field('bat_unit_type', 'bat_unit_type');
+function bat_event_state_constraints_install() {
+  foreach (bat_unit_get_type_bundles() as $bundle => $info) {
+    bat_event_state_constraints_add_event_state_range_field($bundle);
+  }
 }
 
 /**
  * Implements hook_uninstall().
  */
-function bat_availability_constraints_uninstall() {
-  foreach (bat_unit_get_types() as $type) {
-    variable_del('bat_availability_constraints_unit_' . $type->type);
-    variable_del('bat_availability_constraints_type_' . $type->type);
-  }
-
+function bat_event_state_constraints_uninstall() {
   field_delete_field('bat_constraints_range');
 }

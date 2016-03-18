@@ -1,10 +1,10 @@
 INTRODUCTION
 ------------
 This module adds functionality to the BAT package
-(drupal.org/project/bar) that allow users to define availability
+(drupal.org/project/bat) that allow users to define event state
 constraints.
 
-Availability constraints are defined by a start date / end date,
+Event state constraints are defined by a start date / end date,
 can be activated only if they start on a certain day of the week
 and can defined the maximum allowed stay for the date range.
 
@@ -25,7 +25,7 @@ INSTALLATION
 ------------
 Simply download and activate the module.
 
-BAT Availability constraints requires:
+BAT Event state constraints requires:
 
 BAT
 

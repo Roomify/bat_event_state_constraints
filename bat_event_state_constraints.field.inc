@@ -2,22 +2,22 @@
 
 /**
  * @file
- * Field type declarations and hooks for BAT Availability Constraints module.
+ * Field type declarations and hooks for BAT Event State Constraints module.
  */
 
 /**
  * Implements hook_field_info().
  */
-function bat_availability_constraints_field_info() {
+function bat_event_state_constraints_field_info() {
   return array(
-    'bat_availability_constraints_range' => array(
-      'label' => t('BAT Availability Constraints'),
-      'description' => t('Bookable unit availability options.'),
+    'bat_event_state_constraints_range' => array(
+      'label' => t('BAT Event state Constraints'),
+      'description' => t('Bookable type event state options.'),
       'settings' => array(),
-      'default_widget' => 'bat_availability_constraints_range',
-      'default_formatter' => 'bat_availability_constraints_range',
-      'property_type' => 'bat_availability_constraints_range',
-      'property_callbacks' => array('bat_availability_constraints_range_property_info_callback'),
+      'default_widget' => 'bat_event_state_constraints_range',
+      'default_formatter' => 'bat_event_state_constraints_range',
+      'property_type' => 'bat_event_state_constraints_range',
+      'property_callbacks' => array('bat_event_state_constraints_range_property_info_callback'),
     ),
   );
 }
@@ -25,25 +25,25 @@ function bat_availability_constraints_field_info() {
 /**
  * Property callback for the Entity Metadata framework.
  */
-function bat_availability_constraints_range_property_info_callback(&$info, $entity_type, $field, $instance, $field_type) {
+function bat_event_state_constraints_range_property_info_callback(&$info, $entity_type, $field, $instance, $field_type) {
   // Apply the default.
   entity_metadata_field_default_property_callback($info, $entity_type, $field, $instance, $field_type);
 
   // Finally add in instance specific property info.
   $name = $field['field_name'];
   $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$name];
-  $property['type'] = ($field['cardinality'] != 1) ? 'list<bat_availability_constraints_range>' : 'bat_availability_constraints_range';
-  $property['property info'] = bat_availability_constraints_range_data_property_info('BAT availability constraints');
+  $property['type'] = ($field['cardinality'] != 1) ? 'list<bat_event_state_constraints_range>' : 'bat_event_state_constraints_range';
+  $property['property info'] = bat_event_state_constraints_range_data_property_info('BAT event state constraints');
   $property['getter callback'] = 'entity_metadata_field_verbatim_get';
   $property['setter callback'] = 'entity_metadata_field_verbatim_set';
 }
 
 /**
- * Defines info for the properties of the Availability Constraints Range
+ * Defines info for the properties of the Event State Constraints Range
  * data structure.
  */
-function bat_availability_constraints_range_data_property_info($name = NULL) {
-  // Build an array of properties for an Availability Constraints Range.
+function bat_event_state_constraints_range_data_property_info($name = NULL) {
+  // Build an array of properties for an Event State Constraints Range.
   $properties = array(
     'start_date' => array(
       'label' => 'Start date',
@@ -102,7 +102,7 @@ function bat_availability_constraints_range_data_property_info($name = NULL) {
 /**
  * Implements hook_field_is_empty().
  */
-function bat_availability_constraints_field_is_empty($item, $field) {
+function bat_event_state_constraints_field_is_empty($item, $field) {
   if ($item['group_conditions']['operation'] == 0) {
     return TRUE;
   }
@@ -118,12 +118,12 @@ function bat_availability_constraints_field_is_empty($item, $field) {
 /**
  * Implements hook_field_widget_info().
  */
-function bat_availability_constraints_field_widget_info() {
+function bat_event_state_constraints_field_widget_info() {
   return array(
-    'bat_availability_constraints_range' => array(
-      'label' => t('Availability range'),
-      'description' => t('Availability range widget'),
-      'field types' => array('bat_availability_constraints_range'),
+    'bat_event_state_constraints_range' => array(
+      'label' => t('Event state range'),
+      'description' => t('Event state range widget'),
+      'field types' => array('bat_event_state_constraints_range'),
       'settings' => array(),
     ),
   );
@@ -132,8 +132,8 @@ function bat_availability_constraints_field_widget_info() {
 /**
  * Implements hook_field_widget_form().
  */
-function bat_availability_constraints_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  if ($instance['widget']['type'] == 'bat_availability_constraints_range') {
+function bat_event_state_constraints_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  if ($instance['widget']['type'] == 'bat_event_state_constraints_range') {
     $field_parents = $element['#field_parents'];
     $field_name = $element['#field_name'];
     $language = $element['#language'];
@@ -141,7 +141,7 @@ function bat_availability_constraints_field_widget_form(&$form, &$form_state, $f
     $parents = array_merge($field_parents, array($field_name, $language, $delta));
 
     $element += array(
-      '#type' => 'bat_availability_range',
+      '#type' => 'bat_event_state_range',
       '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
     );
 
@@ -152,19 +152,19 @@ function bat_availability_constraints_field_widget_form(&$form, &$form_state, $f
         '#type' => 'submit',
         '#value' => t('Remove'),
         '#validate' => array(),
-        '#submit' => array('bat_availability_constraints_remove_submit'),
+        '#submit' => array('bat_event_state_constraints_remove_submit'),
         '#limit_validation_errors' => array(),
         '#ajax' => array(
-          'path' => 'bat_availability_constraints/ajax',
+          'path' => 'bat_event_state_constraints/ajax',
           'effect' => 'fade',
         ),
         '#attributes' => array(
-          'class' => array('bat-availability-range--remove-button'),
+          'class' => array('bat-event-state-range--remove-button'),
         ),
         '#weight' => 100,
       );
 
-      $element['#attached']['css'] = array(drupal_get_path('module', 'bat_availability_constraints') . '/css/bat_availability_constraints_range.css');
+      $element['#attached']['css'] = array(drupal_get_path('module', 'bat_event_state_constraints') . '/css/bat_event_state_constraints_range.css');
     }
     return $element;
   }
@@ -173,13 +173,13 @@ function bat_availability_constraints_field_widget_form(&$form, &$form_state, $f
 /**
  * Implements hook_field_validate().
  */
-function bat_availability_constraints_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+function bat_event_state_constraints_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   foreach ($items as $delta => $item) {
     if (is_array($item)) {
       if (isset($item['group_conditions']['start_date']) && isset($item['group_conditions']['end_date'])) {
         if ($item['group_conditions']['start_date'] >= $item['group_conditions']['end_date']) {
           $errors[$field['field_name']][$langcode][$delta][] = array(
-            'error' => 'bat_availability_constraints_end_date',
+            'error' => 'bat_event_state_constraints_end_date',
             'message' => t('The end date must be greater than the start date.'),
           );
         }
@@ -190,7 +190,7 @@ function bat_availability_constraints_field_validate($entity_type, $entity, $fie
         if (!((int) $item['group_conditions']['minimum_stay_nights'] == $item['group_conditions']['minimum_stay_nights'] &&
               (int) $item['group_conditions']['minimum_stay_nights'] > 0)) {
           $errors[$field['field_name']][$langcode][$delta][] = array(
-            'error' => 'bat_availability_constraints_minimum_stay',
+            'error' => 'bat_event_state_constraints_minimum_stay',
             'message' => t('The minimum stay must be a positive integer or zero (0).'),
           );
         }
@@ -203,7 +203,7 @@ function bat_availability_constraints_field_validate($entity_type, $entity, $fie
         if (!((int) $item['group_conditions']['maximum_stay_nights'] == $item['group_conditions']['maximum_stay_nights'] &&
               (int) $item['group_conditions']['maximum_stay_nights'] > 0)) {
           $errors[$field['field_name']][$langcode][$delta][] = array(
-            'error' => 'bat_availability_constraints_maximum_stay',
+            'error' => 'bat_event_state_constraints_maximum_stay',
             'message' => t('The maximum stay must be a positive integer or zero (0).'),
           );
         }
@@ -214,7 +214,7 @@ function bat_availability_constraints_field_validate($entity_type, $entity, $fie
 
       if ($maximum_set && $minimum_set && ($item['group_conditions']['minimum_stay_nights'] > $item['group_conditions']['maximum_stay_nights'])) {
         $errors[$field['field_name']][$langcode][$delta][] = array(
-          'error' => 'bat_availability_constraints_range',
+          'error' => 'bat_event_state_constraints_range',
           'message' => t("The minimum stay cannot be longer than maximum stay."),
         );
       }
@@ -232,7 +232,7 @@ function bat_availability_constraints_field_validate($entity_type, $entity, $fie
  * $form_state['input'], and $form_state['field'] so that user changed values
  * follow. This is a bit of a complicated process.
  */
-function bat_availability_constraints_remove_submit($form, &$form_state) {
+function bat_event_state_constraints_remove_submit($form, &$form_state) {
   $button = $form_state['triggering_element'];
   $delta = $button['#delta'];
 

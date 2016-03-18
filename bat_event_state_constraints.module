@@ -2,14 +2,14 @@
 
 /**
  * @file
- * Main hooks and API functions for BAT Availability Constraints module.
+ * Main hooks and API functions for BAT Event State Constraints module.
  */
 
-module_load_include('inc', 'bat_availability_constraints', 'bat_availability_constraints.field');
+module_load_include('inc', 'bat_event_state_constraints', 'bat_event_state_constraints.field');
 
-define('BAT_AVAILABILITY_CONSTRAINTS_MUST_START', 'must');
-define('BAT_AVAILABILITY_CONSTRAINTS_IF_STARTS', 'if');
-define('BAT_AVAILABILITY_CONSTRAINTS_NO_DAY', 'none');
+define('BAT_EVENT_STATE_CONSTRAINTS_MUST_START', 'must');
+define('BAT_EVENT_STATE_CONSTRAINTS_IF_STARTS', 'if');
+define('BAT_EVENT_STATE_CONSTRAINTS_NO_DAY', 'none');
 
 use Drupal\bat\MinMaxConstraint;
 use Drupal\bat\CheckInDayConstraint;
@@ -17,10 +17,10 @@ use Drupal\bat\CheckInDayConstraint;
 /**
  * Implements hook_menu().
  */
-function bat_availability_constraints_menu() {
-  $items['bat_availability_constraints/ajax'] = array(
+function bat_event_state_constraints_menu() {
+  $items['bat_event_state_constraints/ajax'] = array(
     'title' => 'Remove item callback',
-    'page callback' => 'bat_availability_constraints_remove_js',
+    'page callback' => 'bat_event_state_constraints_remove_js',
     'delivery callback' => 'ajax_deliver',
     'access callback' => TRUE,
     'theme callback' => 'ajax_base_page_theme',
@@ -33,14 +33,14 @@ function bat_availability_constraints_menu() {
 }
 
 /**
- * Page callback to handle AJAX for removing a bat availability range item.
+ * Page callback to handle AJAX for removing a bat event state range item.
  *
  * This is a direct page callback. The actual job of deleting the item is
  * done in the submit handler for the button, so all we really need to
  * do is process the form and then generate output. We generate this
  * output by doing a replace command on the id of the entire form element.
  */
-function bat_availability_constraints_remove_js() {
+function bat_event_state_constraints_remove_js() {
   // drupal_html_id() very helpfully ensures that all html IDS are unique
   // on a page. Unfortunately what it doesn't realize is that the IDs
   // we are generating are going to replace IDs that already exist, so
@@ -74,16 +74,16 @@ function bat_availability_constraints_remove_js() {
 }
 
 /**
- * Adds the default Availability range field to certain bundle.
+ * Adds the default Event state range field to certain bundle.
  */
-function bat_availability_constraints_add_availability_range_field($bundle) {
+function bat_event_state_constraints_add_event_state_range_field($bundle) {
   field_info_cache_clear();
 
   // Create field ('bat_constraint_range') if not exists.
   if (field_read_field('bat_constraints_range') === FALSE) {
     $field = array(
       'field_name' => 'bat_constraints_range',
-      'type' => 'bat_availability_constraints_range',
+      'type' => 'bat_event_state_constraints_range',
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
     );
     field_create_field($field);
@@ -96,11 +96,11 @@ function bat_availability_constraints_add_availability_range_field($bundle) {
     $instance = array(
       'field_name' => 'bat_constraints_range',
       'entity_type' => 'bat_type',
-      'label' => 'Availability ranges',
+      'label' => 'Event state ranges',
       'bundle' => $bundle,
       'required' => FALSE,
       'widget' => array(
-        'type' => 'bat_availability_constraints_range',
+        'type' => 'bat_event_state_constraints_range',
       ),
     );
     field_create_instance($instance);
@@ -110,28 +110,28 @@ function bat_availability_constraints_add_availability_range_field($bundle) {
 /**
  * Implements hook_entity_insert().
  */
-function bat_availability_constraints_entity_insert($entity, $type) {
+function bat_event_state_constraints_entity_insert($entity, $type) {
   if ($type == 'bat_type_bundle') {
-    bat_availability_constraints_add_availability_range_field($entity->type);
+    bat_event_state_constraints_add_event_state_range_field($entity->type);
   }
 }
 
 /**
  * Implements hook_element_info().
  */
-function bat_availability_constraints_element_info() {
+function bat_event_state_constraints_element_info() {
   $elements = array();
-  $elements['bat_availability_range'] = array(
+  $elements['bat_event_state_range'] = array(
     '#input' => TRUE,
-    '#process' => array('bat_availability_range_process'),
+    '#process' => array('bat_event_state_range_process'),
   );
   return $elements;
 }
 
 /**
- * Generates the 'bat_availability_range' Form API element.
+ * Generates the 'bat_event_state_range' Form API element.
  */
-function bat_availability_range_process($element, $form_state, $complete_form) {
+function bat_event_state_range_process($element, $form_state, $complete_form) {
   $range = bat_date_range_fields();
 
   $always_id = drupal_html_id('bat-constraints-range-always');
@@ -160,7 +160,7 @@ function bat_availability_range_process($element, $form_state, $complete_form) {
   }
 
   if (!empty($element['#value']) && !isset($element['#value']['group_conditions'])) {
-    if ($element['#value']['constraint_type'] == BAT_AVAILABILITY_CONSTRAINTS_MUST_START) {
+    if ($element['#value']['constraint_type'] == BAT_EVENT_STATE_CONSTRAINTS_MUST_START) {
       $element['group_conditions']['operation']['#value'] = 2;
     }
     else {
@@ -173,9 +173,9 @@ function bat_availability_range_process($element, $form_state, $complete_form) {
     '#value' => t('Set min/max period'),
     '#ajax' => array(
       'wrapper' => 'group-conditions-' . $delta,
-      'callback' => 'bat_availability_range_form_ajax_callback',
+      'callback' => 'bat_event_state_range_form_ajax_callback',
     ),
-    '#submit' => array('bat_availability_range_form_ajax_callback'),
+    '#submit' => array('bat_event_state_range_form_ajax_callback'),
     '#validate' => array(),
     '#limit_validation_errors' => array(),
     '#executes_submit_callback' => FALSE,
@@ -187,9 +187,9 @@ function bat_availability_range_process($element, $form_state, $complete_form) {
     '#value' => t('Set check-in day'),
     '#ajax' => array(
       'wrapper' => 'group-conditions-' . $delta,
-      'callback' => 'bat_availability_range_form_ajax_callback',
+      'callback' => 'bat_event_state_range_form_ajax_callback',
     ),
-    '#submit' => array('bat_availability_range_form_ajax_callback'),
+    '#submit' => array('bat_event_state_range_form_ajax_callback'),
     '#validate' => array(),
     '#limit_validation_errors' => array(),
     '#executes_submit_callback' => FALSE,
@@ -215,7 +215,7 @@ function bat_availability_range_process($element, $form_state, $complete_form) {
       '#size' => 2,
       '#ajax' => array(
         'wrapper' => 'group-conditions-' . $delta,
-        'callback' => 'bat_availability_range_form_ajax_callback',
+        'callback' => 'bat_event_state_range_form_ajax_callback',
       ),
       '#prefix' => '<div class="group-conditions-minimum-stay">',
       '#suffix' => '</div>',
@@ -243,7 +243,7 @@ function bat_availability_range_process($element, $form_state, $complete_form) {
       '#size' => 2,
       '#ajax' => array(
         'wrapper' => 'group-conditions-' . $delta,
-        'callback' => 'bat_availability_range_form_ajax_callback',
+        'callback' => 'bat_event_state_range_form_ajax_callback',
       ),
       '#prefix' => '<div class="group-conditions-maximum-stay">',
       '#suffix' => '</div>',
@@ -271,7 +271,7 @@ function bat_availability_range_process($element, $form_state, $complete_form) {
       '#options' => array('always' => t('Always'), 'dates' => t('Select period')),
       '#ajax' => array(
         'wrapper' => 'group-conditions-' . $delta,
-        'callback' => 'bat_availability_range_form_ajax_callback',
+        'callback' => 'bat_event_state_range_form_ajax_callback',
       ),
       '#prefix' => '<div class="group-conditions-period">',
       '#suffix' => '</div>',
@@ -310,11 +310,11 @@ function bat_availability_range_process($element, $form_state, $complete_form) {
       '#title' => t('Only if check-in starts on a specific day'),
       '#ajax' => array(
         'wrapper' => 'group-conditions-' . $delta,
-        'callback' => 'bat_availability_range_form_ajax_callback',
+        'callback' => 'bat_event_state_range_form_ajax_callback',
       ),
       '#prefix' => '<div class="group-conditions-booking-if-start">',
       '#suffix' => '</div>',
-      '#default_value' => (isset($element['#value']['constraint_type']) && $element['#value']['constraint_type'] == BAT_AVAILABILITY_CONSTRAINTS_IF_STARTS) ? 1 : 0,
+      '#default_value' => (isset($element['#value']['constraint_type']) && $element['#value']['constraint_type'] == BAT_EVENT_STATE_CONSTRAINTS_IF_STARTS) ? 1 : 0,
     );
 
     if ( (isset($element['#value']['group_conditions']['booking_if_start']) &&
@@ -323,7 +323,7 @@ function bat_availability_range_process($element, $form_state, $complete_form) {
 
       $element['group_conditions']['booking_if_start_day'] = array(
         '#type' => 'select',
-        '#options' => bat_availability_constraints_weekdays(),
+        '#options' => bat_event_state_constraints_weekdays(),
         '#default_value' => (isset($element['#value']['start_day']) && !empty($element['#value']['start_day'])) ? $element['#value']['start_day'] : '',
       );
     }
@@ -335,7 +335,7 @@ function bat_availability_range_process($element, $form_state, $complete_form) {
 
     $element['group_conditions']['booking_must_start'] = array(
       '#type' => 'select',
-      '#options' => bat_availability_constraints_weekdays(),
+      '#options' => bat_event_state_constraints_weekdays(),
       '#field_prefix' => t('Check-in day must be'),
       '#prefix' => '<div class="group-conditions-booking-must-start">',
       '#suffix' => '</div>',
@@ -348,7 +348,7 @@ function bat_availability_range_process($element, $form_state, $complete_form) {
       '#options' => array('always' => t('Always'), 'dates' => t('Select period')),
       '#ajax' => array(
         'wrapper' => 'group-conditions-' . $delta,
-        'callback' => 'bat_availability_range_form_ajax_callback',
+        'callback' => 'bat_event_state_range_form_ajax_callback',
       ),
       '#prefix' => '<div class="group-conditions-period">',
       '#suffix' => '</div>',
@@ -383,12 +383,12 @@ function bat_availability_range_process($element, $form_state, $complete_form) {
     }
   }
 
-  $element['#element_validate'][] = 'bat_availability_range_validate';
+  $element['#element_validate'][] = 'bat_event_state_range_validate';
 
   return $element;
 }
 
-function bat_availability_range_form_ajax_callback($form, &$form_state) {
+function bat_event_state_range_form_ajax_callback($form, &$form_state) {
   $parents = $form_state['triggering_element']['#parents'];
   array_pop($parents);
 
@@ -396,9 +396,9 @@ function bat_availability_range_form_ajax_callback($form, &$form_state) {
 }
 
 /**
- * Validation callback for bat_availability_range Form API element.
+ * Validation callback for bat_event_state_range Form API element.
  */
-function bat_availability_range_validate($element, &$form_state) {
+function bat_event_state_range_validate($element, &$form_state) {
   if (isset($element['#value']['group_conditions'])) {
     if (isset($element['#value']['group_conditions']['period'])) {
       if ($element['#value']['group_conditions']['period'] == 'always') {
@@ -432,7 +432,7 @@ function bat_availability_range_validate($element, &$form_state) {
     if ($element['#value']['group_conditions']['operation'] == 1) {
       if (isset($element['#value']['group_conditions']['booking_if_start']) && $element['#value']['group_conditions']['booking_if_start']) {
         $parents = array_merge($element['#parents'], array('constraint_type'));
-        drupal_array_set_nested_value($form_state['values'], $parents, BAT_AVAILABILITY_CONSTRAINTS_IF_STARTS, TRUE);
+        drupal_array_set_nested_value($form_state['values'], $parents, BAT_EVENT_STATE_CONSTRAINTS_IF_STARTS, TRUE);
 
         $start_day = isset($element['#value']['group_conditions']['booking_if_start_day']) ? $element['#value']['group_conditions']['booking_if_start_day'] : 1;
 
@@ -441,7 +441,7 @@ function bat_availability_range_validate($element, &$form_state) {
       }
       else {
         $parents = array_merge($element['#parents'], array('constraint_type'));
-        drupal_array_set_nested_value($form_state['values'], $parents, BAT_AVAILABILITY_CONSTRAINTS_NO_DAY, TRUE);
+        drupal_array_set_nested_value($form_state['values'], $parents, BAT_EVENT_STATE_CONSTRAINTS_NO_DAY, TRUE);
       }
 
       if (isset($element['#value']['group_conditions']['minimum_stay_nights']) && $element['#value']['group_conditions']['minimum_stay_nights'] != '' && $element['#value']['group_conditions']['minimum_stay']) {
@@ -456,7 +456,7 @@ function bat_availability_range_validate($element, &$form_state) {
     }
     elseif ($element['#value']['group_conditions']['operation'] == 2) {
       $parents = array_merge($element['#parents'], array('constraint_type'));
-      drupal_array_set_nested_value($form_state['values'], $parents, BAT_AVAILABILITY_CONSTRAINTS_MUST_START, TRUE);
+      drupal_array_set_nested_value($form_state['values'], $parents, BAT_EVENT_STATE_CONSTRAINTS_MUST_START, TRUE);
 
       $parents = array_merge($element['#parents'], array('start_day'));
       drupal_array_set_nested_value($form_state['values'], $parents, $element['#value']['group_conditions']['booking_must_start'], TRUE);
@@ -470,7 +470,7 @@ function bat_availability_range_validate($element, &$form_state) {
  * @return array
  *   The readable weekdays keyed by N format.
  */
-function bat_availability_constraints_weekdays() {
+function bat_event_state_constraints_weekdays() {
   return array(
     1 => t('Monday'),
     2 => t('Tuesday'),
@@ -490,15 +490,15 @@ function bat_availability_constraints_weekdays() {
  * @return string
  *   The human readable weekday.
  */
-function bat_availability_constraints_get_weekday($day) {
-  $weekdays = bat_availability_constraints_weekdays();
+function bat_event_state_constraints_get_weekday($day) {
+  $weekdays = bat_event_state_constraints_weekdays();
   return isset($weekdays[$day]) ? $weekdays[$day] : '';
 }
 
 /**
  * Implements hook_bat_unit_constraints().
  */
-function bat_availability_constraints_bat_unit_constraints($unit) {
+function bat_event_state_constraints_bat_unit_constraints($unit) {
   $field_constraints = field_get_items('bat_unit', $unit, 'bat_constraints_range');
 
   $constraints = array();
@@ -508,7 +508,7 @@ function bat_availability_constraints_bat_unit_constraints($unit) {
       $start_date = new DateTime($field_constraint['start_date']);
       $end_date = new DateTime($field_constraint['end_date']);
 
-      if ($field_constraint['constraint_type'] == BAT_AVAILABILITY_CONSTRAINTS_MUST_START) {
+      if ($field_constraint['constraint_type'] == BAT_EVENT_STATE_CONSTRAINTS_MUST_START) {
         $constraint = new CheckInDayConstraint(array($unit), $field_constraint['start_day'], $start_date, $end_date);
         $constraints[] = $constraint;
       }
