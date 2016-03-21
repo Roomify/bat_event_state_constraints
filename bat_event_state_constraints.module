@@ -11,8 +11,9 @@ define('BAT_EVENT_STATE_CONSTRAINTS_MUST_START', 'must');
 define('BAT_EVENT_STATE_CONSTRAINTS_IF_STARTS', 'if');
 define('BAT_EVENT_STATE_CONSTRAINTS_NO_DAY', 'none');
 
-use Drupal\bat\MinMaxConstraint;
-use Drupal\bat\CheckInDayConstraint;
+use Roomify\Bat\Unit\Unit;
+use Roomify\Bat\Constraint\MinMaxDaysConstraint;
+use Roomify\Bat\Constraint\CheckInDayConstraint;
 
 /**
  * Implements hook_menu().
@@ -496,29 +497,44 @@ function bat_event_state_constraints_get_weekday($day) {
 }
 
 /**
- * Implements hook_bat_unit_constraints().
+ * Implements hook_bat_event_constraints_info().
  */
-function bat_event_state_constraints_bat_unit_constraints($unit) {
-  $field_constraints = field_get_items('bat_unit', $unit, 'bat_constraints_range');
-
+function bat_event_state_constraints_bat_event_constraints_info() {
   $constraints = array();
 
-  if (!empty($field_constraints)) {
-    foreach ($field_constraints as $field_constraint) {
-      $start_date = new DateTime($field_constraint['start_date']);
-      $end_date = new DateTime($field_constraint['end_date']);
+  $types = bat_unit_get_types();
+  foreach ($types as $type) {
+    $field_constraints = field_get_items('bat_type', $type, 'bat_constraints_range');
 
-      if ($field_constraint['constraint_type'] == BAT_EVENT_STATE_CONSTRAINTS_MUST_START) {
-        $constraint = new CheckInDayConstraint(array($unit), $field_constraint['start_day'], $start_date, $end_date);
-        $constraints[] = $constraint;
+    if (!empty($field_constraints)) {
+      $drupal_units = bat_unit_load_multiple(FALSE, array('type_id' => $type->type_id));
+      $bat_units = array();
+      foreach ($drupal_units as $unit_id => $unit) {
+        $bat_units[] = new Unit($unit_id, 0);
       }
-      else {
-        $minimum_stay = $field_constraint['minimum_stay'];
-        $maximum_stay = $field_constraint['maximum_stay'];
-        $start_day = $field_constraint['start_day'];
 
-        $constraint = new MinMaxDaysConstraint(array($unit), $minimum_stay, $maximum_stay, $start_date, $end_date, $start_day);
-        $constraints[] = $constraint;
+      foreach ($field_constraints as $field_constraint) {
+        $start_date = new DateTime($field_constraint['start_date']);
+        $end_date = new DateTime($field_constraint['end_date']);
+
+        if ($field_constraint['constraint_type'] == BAT_EVENT_STATE_CONSTRAINTS_MUST_START) {
+          $constraint = new CheckInDayConstraint($bat_units, $field_constraint['start_day'], $start_date, $end_date);
+          $constraints[] = array(
+            'type' => $type->type,
+            'constraint' => $constraint,
+          );
+        }
+        else {
+          $minimum_stay = $field_constraint['minimum_stay'];
+          $maximum_stay = $field_constraint['maximum_stay'];
+          $start_day = $field_constraint['start_day'];
+
+          $constraint = new MinMaxDaysConstraint($bat_units, $minimum_stay, $maximum_stay, $start_date, $end_date, $start_day);
+          $constraints[] = array(
+            'type' => $type->type,
+            'constraint' => $constraint,
+          );
+        }
       }
     }
   }
