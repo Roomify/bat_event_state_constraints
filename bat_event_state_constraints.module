@@ -155,7 +155,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
     if ($form_state['input']['_triggering_element_value'] == t('Set min/max period')) {
       $element['group_conditions']['operation']['#value'] = 1;
     }
-    elseif ($form_state['input']['_triggering_element_value'] == t('Set check-in day')) {
+    elseif ($form_state['input']['_triggering_element_value'] == t('Set event start day')) {
       $element['group_conditions']['operation']['#value'] = 2;
     }
   }
@@ -185,7 +185,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
 
   $element['group_conditions']['add_checkin_day'] = array(
     '#type' => 'button',
-    '#value' => t('Set check-in day'),
+    '#value' => t('Set event start day'),
     '#ajax' => array(
       'wrapper' => 'group-conditions-' . $delta,
       'callback' => 'bat_event_state_range_form_ajax_callback',
@@ -212,7 +212,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
 
     $element['group_conditions']['minimum_stay'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Minimum Stay is'),
+      '#title' => t('Minimum Event Length is'),
       '#size' => 2,
       '#ajax' => array(
         'wrapper' => 'group-conditions-' . $delta,
@@ -240,7 +240,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
 
     $element['group_conditions']['maximum_stay'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Maximum Stay is'),
+      '#title' => t('Maximum Event Length is'),
       '#size' => 2,
       '#ajax' => array(
         'wrapper' => 'group-conditions-' . $delta,
@@ -308,7 +308,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
 
     $element['group_conditions']['booking_if_start'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Only if check-in starts on a specific day'),
+      '#title' => t('Only if event starts on a specific day'),
       '#ajax' => array(
         'wrapper' => 'group-conditions-' . $delta,
         'callback' => 'bat_event_state_range_form_ajax_callback',
@@ -337,7 +337,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
     $element['group_conditions']['booking_must_start'] = array(
       '#type' => 'select',
       '#options' => bat_event_state_constraints_weekdays(),
-      '#field_prefix' => t('Check-in day must be'),
+      '#field_prefix' => t('Event start day must be'),
       '#prefix' => '<div class="group-conditions-booking-must-start">',
       '#suffix' => '</div>',
       '#default_value' => (isset($element['#value']['start_day']) && !empty($element['#value']['start_day'])) ? $element['#value']['start_day'] : '',
