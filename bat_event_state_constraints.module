@@ -152,10 +152,10 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
   );
 
   if (isset($form_state['input']['_triggering_element_value'])) {
-    if ($form_state['input']['_triggering_element_value'] == t('Set min/max period')) {
+    if ($form_state['input']['_triggering_element_value'] == t(variable_get('bat_event_state_min_max', 'Set min/max period'))) {
       $element['group_conditions']['operation']['#value'] = 1;
     }
-    elseif ($form_state['input']['_triggering_element_value'] == t('Set event start day')) {
+    elseif ($form_state['input']['_triggering_element_value'] == t(variable_get('bat_event_state_start_day', 'Set event start day'))) {
       $element['group_conditions']['operation']['#value'] = 2;
     }
   }
@@ -171,7 +171,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
 
   $element['group_conditions']['add_min_max'] = array(
     '#type' => 'button',
-    '#value' => t('Set min/max period'),
+    '#value' => t(variable_get('bat_event_state_min_max', 'Set min/max period')),
     '#ajax' => array(
       'wrapper' => 'group-conditions-' . $delta,
       'callback' => 'bat_event_state_range_form_ajax_callback',
@@ -185,7 +185,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
 
   $element['group_conditions']['add_checkin_day'] = array(
     '#type' => 'button',
-    '#value' => t('Set event start day'),
+    '#value' => t(variable_get('bat_event_state_start_day', 'Set event start day')),
     '#ajax' => array(
       'wrapper' => 'group-conditions-' . $delta,
       'callback' => 'bat_event_state_range_form_ajax_callback',
@@ -207,12 +207,12 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
 
   if ($element['group_conditions']['operation']['#value'] == 1) {
     $element['group_conditions']['title'] = array(
-      '#markup' => '<div class="condition-title"><strong>' . t('Require that') . '</strong></div>',
+      '#markup' => '<div class="condition-title"><strong>' . t(variable_get('bat_event_state_require_that', 'Require that')) . '</strong></div>',
     );
 
     $element['group_conditions']['minimum_stay'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Minimum Event Length is'),
+      '#title' => t(variable_get('bat_event_state_minimum_stay', 'Minimum Event Length is')),
       '#size' => 2,
       '#ajax' => array(
         'wrapper' => 'group-conditions-' . $delta,
@@ -229,7 +229,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
 
       $element['group_conditions']['minimum_stay_nights'] = array(
         '#type' => 'textfield',
-        '#field_suffix' => t('days'),
+        '#field_suffix' => t(variable_get('bat_event_state_days', 'days')),
         '#size' => 3,
         '#required' => TRUE,
         '#prefix' => '<div class="group-conditions-minimum-stay-nights">',
@@ -240,7 +240,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
 
     $element['group_conditions']['maximum_stay'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Maximum Event Length is'),
+      '#title' => t(variable_get('bat_event_state_maximum_stay', 'Maximum Event Length is')),
       '#size' => 2,
       '#ajax' => array(
         'wrapper' => 'group-conditions-' . $delta,
@@ -257,7 +257,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
 
       $element['group_conditions']['maximum_stay_nights'] = array(
         '#type' => 'textfield',
-        '#field_suffix' => t('days'),
+        '#field_suffix' => t(variable_get('bat_event_state_days', 'days')),
         '#size' => 3,
         '#required' => TRUE,
         '#prefix' => '<div class="group-conditions-maximum-stay-nights">',
@@ -267,9 +267,9 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
     }
 
     $element['group_conditions']['period'] = array(
-      '#title' => t('applicable'),
+      '#title' => t(variable_get('bat_event_state_applicable', 'applicable')),
       '#type' => 'select',
-      '#options' => array('always' => t('Always'), 'dates' => t('Select period')),
+      '#options' => array('always' => t(variable_get('bat_event_state_always', 'Always')), 'dates' => t(variable_get('bat_event_state_select_period', 'Select period'))),
       '#ajax' => array(
         'wrapper' => 'group-conditions-' . $delta,
         'callback' => 'bat_event_state_range_form_ajax_callback',
@@ -284,7 +284,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
           (isset($element['#value']['always']) && !$element['#value']['always']) ) {
 
       $element['group_conditions']['start_date'] = array(
-        '#title' => t('Start date'),
+        '#title' => t(variable_get('bat_event_state_start_date', 'Start date')),
         '#required' => TRUE,
         '#default_value' => (isset($element['#value']['start_date']) && empty($element['#value']['always'])) ? $element['#value']['start_date'] : '',
         '#states' => array(
@@ -295,7 +295,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
       ) + $range['bat_start_date'];
 
       $element['group_conditions']['end_date'] = array(
-        '#title' => t('End date'),
+        '#title' => t(variable_get('bat_event_state_end_date', 'End date')),
         '#required' => TRUE,
         '#default_value' => (isset($element['#value']['end_date']) && empty($element['#value']['always'])) ? $element['#value']['end_date'] : '',
         '#states' => array(
@@ -308,7 +308,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
 
     $element['group_conditions']['booking_if_start'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Only if event starts on a specific day'),
+      '#title' => t(variable_get('bat_event_state_booking_if_start', 'Only if event starts on a specific day')),
       '#ajax' => array(
         'wrapper' => 'group-conditions-' . $delta,
         'callback' => 'bat_event_state_range_form_ajax_callback',
@@ -331,22 +331,22 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
   }
   elseif ($element['group_conditions']['operation']['#value'] == 2) {
     $element['group_conditions']['title'] = array(
-      '#markup' => '<div class="condition-title"><strong>' . t('Require that') . '</strong></div>',
+      '#markup' => '<div class="condition-title"><strong>' . t(variable_get('bat_event_state_require_that', 'Require that')) . '</strong></div>',
     );
 
     $element['group_conditions']['booking_must_start'] = array(
       '#type' => 'select',
       '#options' => bat_event_state_constraints_weekdays(),
-      '#field_prefix' => t('Event start day must be'),
+      '#field_prefix' => t(variable_get('bat_event_state_booking_must_start', 'Event start day must be')),
       '#prefix' => '<div class="group-conditions-booking-must-start">',
       '#suffix' => '</div>',
       '#default_value' => (isset($element['#value']['start_day']) && !empty($element['#value']['start_day'])) ? $element['#value']['start_day'] : '',
     );
 
     $element['group_conditions']['period'] = array(
-      '#title' => t('applicable'),
+      '#title' => t(variable_get('bat_event_state_applicable', 'applicable')),
       '#type' => 'select',
-      '#options' => array('always' => t('Always'), 'dates' => t('Select period')),
+      '#options' => array('always' => t(variable_get('bat_event_state_always', 'Always')), 'dates' => t(variable_get('bat_event_state_select_period', 'Select period'))),
       '#ajax' => array(
         'wrapper' => 'group-conditions-' . $delta,
         'callback' => 'bat_event_state_range_form_ajax_callback',
@@ -361,7 +361,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
           (isset($element['#value']['always']) && !$element['#value']['always']) ) {
 
       $element['group_conditions']['start_date'] = array(
-        '#title' => t('Start date'),
+        '#title' => t(variable_get('bat_event_state_start_date', 'Start date')),
         '#required' => TRUE,
         '#default_value' => (isset($element['#value']['start_date']) && empty($element['#value']['always'])) ? $element['#value']['start_date'] : '',
         '#states' => array(
@@ -372,7 +372,7 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
       ) + $range['bat_start_date'];
 
       $element['group_conditions']['end_date'] = array(
-        '#title' => t('End date'),
+        '#title' => t(variable_get('bat_event_state_end_date', 'End date')),
         '#required' => TRUE,
         '#default_value' => (isset($element['#value']['end_date']) && empty($element['#value']['always'])) ? $element['#value']['end_date'] : '',
         '#states' => array(
@@ -389,6 +389,9 @@ function bat_event_state_range_process($element, $form_state, $complete_form) {
   return $element;
 }
 
+/**
+ * Ajax callback for bat_event_state_range Form API element.
+ */
 function bat_event_state_range_form_ajax_callback($form, &$form_state) {
   $parents = $form_state['triggering_element']['#parents'];
   array_pop($parents);

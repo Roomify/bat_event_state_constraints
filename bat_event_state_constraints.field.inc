@@ -180,7 +180,7 @@ function bat_event_state_constraints_field_validate($entity_type, $entity, $fiel
         if ($item['group_conditions']['start_date'] >= $item['group_conditions']['end_date']) {
           $errors[$field['field_name']][$langcode][$delta][] = array(
             'error' => 'bat_event_state_constraints_end_date',
-            'message' => t('The end date must be greater than the start date.'),
+            'message' => t(variable_get('bat_event_state_end_greater_start_error', 'The end date must be greater than the start date.')),
           );
         }
       }
@@ -191,7 +191,7 @@ function bat_event_state_constraints_field_validate($entity_type, $entity, $fiel
               (int) $item['group_conditions']['minimum_stay_nights'] > 0)) {
           $errors[$field['field_name']][$langcode][$delta][] = array(
             'error' => 'bat_event_state_constraints_minimum_stay',
-            'message' => t('The minimum stay must be a positive integer or zero (0).'),
+            'message' => t(variable_get('bat_event_state_minimum_stay_positive_error', 'The minimum stay must be a positive integer or zero (0).')),
           );
         }
         else {
@@ -204,7 +204,7 @@ function bat_event_state_constraints_field_validate($entity_type, $entity, $fiel
               (int) $item['group_conditions']['maximum_stay_nights'] > 0)) {
           $errors[$field['field_name']][$langcode][$delta][] = array(
             'error' => 'bat_event_state_constraints_maximum_stay',
-            'message' => t('The maximum stay must be a positive integer or zero (0).'),
+            'message' => t(variable_get('bat_event_state_maximum_stay_positive_error', 'The maximum stay must be a positive integer or zero (0).')),
           );
         }
         else {
@@ -215,7 +215,7 @@ function bat_event_state_constraints_field_validate($entity_type, $entity, $fiel
       if ($maximum_set && $minimum_set && ($item['group_conditions']['minimum_stay_nights'] > $item['group_conditions']['maximum_stay_nights'])) {
         $errors[$field['field_name']][$langcode][$delta][] = array(
           'error' => 'bat_event_state_constraints_range',
-          'message' => t("The minimum stay cannot be longer than maximum stay."),
+          'message' => t(variable_get('bat_event_state_minimum_stay_longer_maximum_stay_error', 'The minimum stay cannot be longer than maximum stay.')),
         );
       }
     }

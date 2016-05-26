@@ -50,4 +50,3 @@ constraint be activated only if the booking request starts on a specific date
 or should it enforce that a booking needs to start on a specific date.
 Minimum stay: The minimum allowable booking duration.
 Maximum stay: The maximum allowable booking duration.
-
