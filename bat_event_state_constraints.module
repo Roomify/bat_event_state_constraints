@@ -544,3 +544,12 @@ function bat_event_state_constraints_bat_event_constraints_info() {
 
   return $constraints;
 }
+
+/**
+ * Implements hook_field_presave().
+ */
+function bat_event_state_constraints_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  if ($field['type'] == 'bat_event_state_constraints_range') {
+    cache_clear_all('bat_event_constraints_info', 'cache');
+  }
+}
