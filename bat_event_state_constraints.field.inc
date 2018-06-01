@@ -124,15 +124,29 @@ function bat_event_state_constraints_field_widget_info() {
       'label' => t('Event state range'),
       'description' => t('Event state range widget'),
       'field types' => array('bat_event_state_constraints_range'),
-      'settings' => array(),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_CUSTOM,
+        'default value' => FIELD_BEHAVIOR_NONE,
+      ),
     ),
   );
 }
 
 /**
- * Implements hook_field_widget_form().
+ * Widget form implementation for constraints.
+ *
+ * @param $form
+ * @param $form_state
+ * @param $field
+ * @param $instance
+ * @param $langcode
+ * @param $items
+ * @param $delta
+ * @param $element
+ *
+ * @return array
  */
-function bat_event_state_constraints_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function bat_event_state_constraints_field_widget_form_build(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   if ($instance['widget']['type'] == 'bat_event_state_constraints_range') {
     $field_parents = $element['#field_parents'];
     $field_name = $element['#field_name'];
@@ -155,8 +169,9 @@ function bat_event_state_constraints_field_widget_form(&$form, &$form_state, $fi
         '#submit' => array('bat_event_state_constraints_remove_submit'),
         '#limit_validation_errors' => array(),
         '#ajax' => array(
-          'path' => 'bat_event_state_constraints/ajax',
+          'callback' => 'bat_event_state_constraints_ajax_update_callback',
           'effect' => 'fade',
+          'wrapper' => $element['#wrapper_id'],
         ),
         '#attributes' => array(
           'class' => array('bat-event-state-range--remove-button'),
@@ -168,6 +183,132 @@ function bat_event_state_constraints_field_widget_form(&$form, &$form_state, $fi
     }
     return $element;
   }
+}
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function bat_event_state_constraints_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $original_element) {
+  $field_name = $field['field_name'];
+  $parents = $form['#parents'];
+
+  // Determine the number of widgets to display.
+  switch ($field['cardinality']) {
+    case FIELD_CARDINALITY_UNLIMITED:
+      $field_state = field_form_get_state($parents, $field_name, $langcode, $form_state);
+      $max = $field_state['items_count'];
+      break;
+
+    default:
+      $max = $field['cardinality'] - 1;
+      break;
+  }
+
+  $title = check_plain($instance['label']);
+  $description = field_filter_xss($instance['description']);
+
+  $id_prefix = implode('-', array_merge($parents, array($field_name)));
+  $wrapper_id = drupal_html_id($id_prefix . '-add-more-wrapper');
+
+  $field_elements = array();
+
+  $function = $instance['widget']['module'] . '_field_widget_form_build';
+
+  if (function_exists($function)) {
+    for ($delta = 0; $delta <= $max; $delta++) {
+      $multiple = $field['cardinality'] > 1 || $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED;
+      $element = array(
+        '#entity_type' => $instance['entity_type'],
+        '#entity' => $original_element['#entity'],
+        '#bundle' => $instance['bundle'],
+        '#field_name' => $field_name,
+        '#language' => $langcode,
+        '#field_parents' => $parents,
+        '#columns' => array_keys($field['columns']),
+        // For multiple fields, title and description are handled by the wrapping table.
+        '#title' => $multiple ? '' : $title,
+        '#description' => $multiple ? '' : $description,
+        // Only the first widget should be required.
+        '#required' => $delta == 0 && $instance['required'],
+        '#delta' => $delta,
+        '#weight' => $delta,
+        '#wrapper_id' => $wrapper_id,
+      );
+      if ($element = $function($form, $form_state, $field, $instance, $langcode, $items, $delta, $element)) {
+        // Input field for the delta (drag-n-drop reordering).
+        if ($multiple) {
+          // We name the element '_weight' to avoid clashing with elements
+          // defined by widget.
+          $element['_weight'] = array(
+            '#type' => 'weight',
+            '#title' => t('Weight for row @number', array('@number' => $delta + 1)),
+            '#title_display' => 'invisible',
+             // Note: this 'delta' is the FAPI 'weight' element's property.
+            '#delta' => $max,
+            '#default_value' => isset($items[$delta]['_weight']) ? $items[$delta]['_weight'] : $delta,
+            '#weight' => 100,
+          );
+        }
+
+        // Allow modules to alter the field widget form element.
+        $context = array(
+          'form' => $form,
+          'field' => $field,
+          'instance' => $instance,
+          'langcode' => $langcode,
+          'items' => $items,
+          'delta' => $delta,
+        );
+        drupal_alter(array('field_widget_form', 'field_widget_' . $instance['widget']['type'] . '_form'), $element, $form_state, $context);
+
+        $field_elements[$delta] = $element;
+      }
+    }
+
+    if ($field_elements) {
+      $field_elements += array(
+        '#theme' => 'field_multiple_value_form',
+        '#field_name' => $field['field_name'],
+        '#cardinality' => $field['cardinality'],
+        '#title' => $title,
+        '#required' => $instance['required'],
+        '#description' => $description,
+        '#prefix' => '<div id="' . $wrapper_id . '">',
+        '#suffix' => '</div>',
+        '#max_delta' => $max,
+      );
+      // Add 'add more' button, if not working with a programmed form.
+      if ($field['cardinality'] == FIELD_CARDINALITY_UNLIMITED && empty($form_state['programmed'])) {
+        $field_elements['add_more'] = array(
+          '#type' => 'submit',
+          '#name' => strtr($id_prefix, '-', '_') . '_add_more',
+          '#value' => t('Add another item'),
+          '#attributes' => array('class' => array('field-add-more-submit')),
+          '#limit_validation_errors' => array(array_merge($parents, array($field_name, $langcode))),
+          '#submit' => array('field_add_more_submit'),
+          '#ajax' => array(
+            'callback' => 'field_add_more_js',
+            'wrapper' => $wrapper_id,
+            'effect' => 'fade',
+          ),
+        );
+      }
+    }
+  }
+
+  return $field_elements;
+}
+
+/**
+ * FAPI #ajax callback to update a constraints item.
+ */
+function bat_event_state_constraints_ajax_update_callback($form, $form_state) {
+  // Get the information on what we're updating.
+  $button = $form_state['triggering_element'];
+  // Go three levels up in the form, to the whole widget.
+  $element = drupal_array_get_nested_value($form, array_slice($button['#array_parents'], 0, -3));
+  // Now send back the rendered element and let Drupal wrap it in an AJAX command.
+  return drupal_render($element);
 }
 
 /**
